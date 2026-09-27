@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+
+# secretsway.toml itself IS committed -- it documents every key with its
+# default. A personalised copy you keep alongside it should be ignored; add it
+# here if you use one.  usage.json and secretsway.log live outside the repo
+# entirely, under $XDG_STATE_HOME and $XDG_CACHE_HOME.
+
+# Packaging build artefacts
+.build/
+dist/

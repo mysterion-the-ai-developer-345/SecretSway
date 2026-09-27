@@ -1,0 +1,33 @@
+#!/bin/sh
+# Post-install: build gtk4-layer-shell if this release does not package it.
+#
+# It landed in Debian trixie / Ubuntu 25.10. On older releases the typelib is
+# genuinely absent and nothing can be done at package-build time, because it
+# is compiled per-architecture.  Build it here instead of failing silently.
+
+set -e
+
+LS_TYPELIB=$(ls /usr/lib/*/girepository-1.0/Gtk4LayerShell-1.0.typelib 2>/dev/null || true)
+
+if [ -n "$LS_TYPELIB" ]; then
+    echo "secretsway: gtk4-layer-shell found, nothing to build."
+    exit 0
+fi
+
+if ! command -v meson >/dev/null 2>&1 || ! command -v ninja >/dev/null 2>&1; then
+    echo "secretsway: gtk4-layer-shell is not packaged for this release and the"
+    echo "            build tools are missing.  Install them and re-run dpkg:"
+    echo "              apt install meson ninja-build libgtk-4-dev libwayland-dev \\"
+    echo "                          wayland-protocols gobject-introspection git"
+    echo "            then: /usr/lib/secretsway/install-layer-shell.sh"
+    exit 0
+fi
+
+echo "secretsway: building gtk4-layer-shell (not packaged for this release)..."
+if /usr/lib/secretsway/install-layer-shell.sh; then
+    echo "secretsway: done."
+else
+    echo "secretsway: that failed; the launcher will report the problem on start."
+fi
+
+exit 0

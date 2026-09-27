@@ -1,0 +1,71 @@
+# Maintainer: Mr.E <mr.e.developer.ai345@gmail.com>
+#
+# Builds gtk4-layer-shell from source and installs SecretSway alongside it.  Arch does
+# not package gtk4-layer-shell in main, so it is compiled as part of this build
+# rather than being a dependency.
+
+pkgname=secretsway
+pkgver=1.2.0
+pkgrel=1
+pkgdesc="Terminal-styled application launcher for sway"
+arch=('x86_64' 'aarch64')
+url="https://github.com/mysterion-the-ai-developer-345/SecretSway"
+license=('MIT')
+depends=('python-gobject' 'gtk4' 'python-cairo' 'ttf-jetbrains-mono')
+makedepends=('meson' 'ninja' 'gtk4' 'wayland' 'wayland-protocols'
+             'gobject-introspection' 'git')
+optdepends=('sway: the compositor this launcher is built for')
+source=()
+sha256sums=()
+
+_libdir="usr/lib"
+_typelibdir="$_libdir/girepository-1.0"
+
+# Where the source tree is taken from.  For a release tarball, set
+#   source=("secretsway-$pkgver.tar.gz")
+# and add its sha256 above; for a git checkout, point this at the repo.
+_srcdir_default="${srcdir:-$(pwd)}"
+
+build() {
+  # --- gtk4-layer-shell -------------------------------------------------
+  # Used from Python via its GIR typelib, so the Vala bindings (vapigen),
+  # demos, docs and tests are disabled.
+  export GISTDIR=/usr
+  git clone --depth 1 https://github.com/wmww/gtk4-layer-shell "$srcdir/gls"
+  meson setup "$srcdir/gls/build" "$srcdir/gls" --prefix=/usr \
+    -Dvapi=false -Dexamples=false -Ddocs=false -Dtests=false -Dsmoke-tests=false
+  ninja -C "$srcdir/gls/build"
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C "$srcdir/gls/build" install
+
+  # --- the launcher ------------------------------------------------------
+  install -dm755 "$_srcdir_default/secretsway" "$pkgdir/$_libdir/secretsway/secretsway"
+  install -Dm644 "$_srcdir_default/__main__.py" "$pkgdir/$_libdir/secretsway/"
+  install -Dm644 "$_srcdir_default/secretsway.toml" "$pkgdir/$_libdir/secretsway/"
+  find "$pkgdir" -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+
+  # README.md lives at the repository root, one level above this project dir,
+  # so GitHub shows it without a second copy here drifting out of sync.
+  install -Dm644 "$_srcdir_default/../README.md" \
+    "$pkgdir/usr/share/doc/$pkgname/README.md"
+
+  # --- launcher ----------------------------------------------------------
+  cat > "$pkgdir/usr/bin/secretsway" <<'EOF'
+#!/bin/sh
+# gtk4-layer-shell must be loaded before libwayland-client, or the layer-shell
+# negotiation fails silently and the strip appears as an ordinary window.
+for d in /usr/lib/; do
+    if [ -f "$d/libgtk4-layer-shell.so" ]; then
+        LD_LIBRARY_PATH="$d${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        GI_TYPELIB_PATH="${d}girepository-1.0${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"
+        LD_PRELOAD="$d/libgtk4-layer-shell.so${LD_PRELOAD:+:$LD_PRELOAD}"
+        export LD_LIBRARY_PATH GI_TYPELIB_PATH LD_PRELOAD
+        break
+    fi
+done
+exec python3 /usr/lib/secretsway "$@"
+EOF
+  chmod 755 "$pkgdir/usr/bin/secretsway"
+}
