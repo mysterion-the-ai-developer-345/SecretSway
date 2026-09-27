@@ -1,5 +1,7 @@
 # SecretSway
 
+FYI: This was Programmed (and Part of this README was Written) using a Chinese Open-Weights AI Model in Claude Code 
+
 A sway app launcher that looks like a terminal.
 
 Opens as a full-width strip at the top of the screen: dark grey, electric blue
