@@ -1,14 +1,13 @@
 # SecretSway
 
-FYI: This was Programmed (and Part of this README was Written) using a Chinese Open-Weights AI Model in Claude Code 
-
-A sway app launcher that looks like a terminal.
+A Sway app launcher styled like a terminal.
 
 Opens as a full-width strip at the top of the screen: dark grey, electric blue
 outline, monospace, no icons, no rounded corners. A prompt line and a selection
-that is an inverted bar rather than a rounded highlight. It is similar to fuzzel
- — the app list comes from the same `.desktop` files — with the
-presentation swapped out.
+bar that inverts rather than highlights. Functionally it's close to fuzzel —
+same `.desktop` file backend — with a different presentation on top.
+
+> Built with the help of a Chinese open-weights model running in Claude Code.
 
 ### Anywhere (this is the one to use)
 
@@ -18,21 +17,21 @@ cd SecretSway/secretsway
 ./install.sh
 ```
 
-`install.sh` detects your package manager and maps the dependency names, so it
-works on Debian/Ubuntu/Mint, Fedora, openSUSE, Arch, Alpine and Gentoo without
-editing. It installs to `~/.local` and needs no root except for the package
-install, which it will print for you to run.
+`install.sh` detects your package manager and maps dependency names, so it
+works unmodified on Debian/Ubuntu/Mint, Fedora, openSUSE, Arch, Alpine, and
+Gentoo. It installs to `~/.local` and needs no root access except for the
+package install step, which it prints for you to run yourself.
 
 ```sh
-./install.sh --deps        # what is missing, install nothing
+./install.sh --deps        # show what's missing, install nothing
 ./install.sh --system      # install system-wide instead
-./install.sh --check       # verify
+./install.sh --check       # verify the install
 ./install.sh --uninstall   # remove
 ```
 
-`gtk4-layer-shell` is built from source when the distribution does not package
-it (it first appears in Debian trixie / Ubuntu 25.10). On Arch this is done by
-the AUR package instead.
+`gtk4-layer-shell` is built from source on distributions that don't package it
+yet (it first appears in Debian trixie / Ubuntu 25.10). On Arch, the AUR
+package handles this instead.
 
 ### Debian / Ubuntu
 
@@ -41,8 +40,8 @@ the AUR package instead.
 sudo dpkg -i dist/secretsway_1.2.0_all.deb
 ```
 
-The package installs the app and, on releases without a packaged
-gtk4-layer-shell, compiles it in `postinst`.
+On releases without a packaged `gtk4-layer-shell`, the package compiles it
+during `postinst`.
 
 ### Arch
 
@@ -50,8 +49,8 @@ gtk4-layer-shell, compiles it in `postinst`.
 cd packaging/arch && makepkg -si
 ```
 
-The PKGBUILD builds gtk4-layer-shell as part of the package, since Arch does
-not ship it. For AUR, copy `packaging/arch/PKGBUILD` into a repository and
+The PKGBUILD builds `gtk4-layer-shell` as part of the package, since Arch
+doesn't ship it. For AUR, copy `packaging/arch/PKGBUILD` into a repository and
 point `source` at your release tarball.
 
 ### Dependencies
@@ -63,9 +62,9 @@ point `source` at your release tarball.
 | Arch | `python-gobject gtk4 python-cairo` | `meson ninja gtk4 wayland wayland-protocols gobject-introspection` |
 | openSUSE | `python3-gobject gtk4 python3-cairo` | `meson ninja gtk4-devel wayland-devel wayland-protocols gobject-introspection` |
 
-No Python packages from PyPI — stdlib plus PyGObject only.
+No PyPI dependencies — stdlib plus PyGObject only.
 
-## Wire it up
+## Wiring it up
 
 One line in `~/.config/sway/config`, next to your other variable definitions:
 
@@ -75,20 +74,20 @@ One line in `~/.config/sway/config`, next to your other variable definitions:
 +set $menu secretsway
 ```
 
-The binding you already have picks it up with no edit at all:
+Your existing binding picks it up without any edit:
 
 ```
 bindsym $mod+d exec $menu
 ```
 
-Then `swaymsg reload` (or `Mod+Shift+C`).
+Then run `swaymsg reload` (or `Mod+Shift+C`).
 
-### When the short name is not enough
+### When the short name isn't enough
 
-`bindsym ... exec` runs through `sh` inheriting **sway's** environment, not
-your login shell's. If you installed per-user, `~/.local/bin` is often not on
-that `PATH` — your login shell adds it, sway does not — and a bare
-`secretsway` fails with "command not found". Two fixes:
+`bindsym ... exec` runs through `sh`, inheriting **Sway's** environment, not
+your login shell's. If you installed per-user, `~/.local/bin` is often missing
+from that `PATH` — your login shell adds it, Sway doesn't — so a bare
+`secretsway` fails with "command not found." Two fixes:
 
 ```
 # either use the full path
@@ -98,12 +97,12 @@ set $menu /home/you/.local/bin/secretsway
 ./install.sh --system
 ```
 
-`install.sh` checks this at the end and prints whichever line applies, so
-trust what it says rather than guessing.
+`install.sh` checks for this at the end and prints whichever fix applies, so
+trust its output rather than guessing.
 
 ### Keeping the old launcher
 
-Worth doing the first time. Leave your existing variable alone and add a
+Worth doing on the first install. Leave your existing variable alone and add a
 second one:
 
 ```
@@ -114,17 +113,17 @@ bindsym $mod+d       exec $menu
 bindsym $mod+Shift+d exec $menu2
 ```
 
-`reload`, try the scratch key, and swap which one `Mod+d` uses when you like it.
+Reload, try the second keybind, and switch `Mod+d` over whenever you're ready.
 
-### Check it worked
+### Verifying it worked
 
 ```sh
 secretsway --check      # deps, app count, font metrics, GI symbols
-secretsway --preview    # the panel drawn as text, no window involved
+secretsway --preview    # the panel rendered as text, no window involved
 ```
 
-If `Mod+d` does nothing, look for a stray character in the `$menu` line —
-`grep menu ~/.config/sway/config` will show it.
+If `Mod+d` does nothing, check for a stray character in the `$menu` line —
+`grep menu ~/.config/sway/config` will usually show it.
 
 ## Keys
 
@@ -137,32 +136,34 @@ If `Mod+d` does nothing, look for a stray character in the `$menu` line —
 | `Tab` / `Shift+Tab` | move |
 | `Esc` | dismiss |
 
-The list shows at most `max_rows` results; the view follows the selection as it
-moves, so the highlight never leaves the screen.
+The list shows at most `max_rows` results; the view scrolls with the
+selection, so the highlight never leaves the screen.
 
 ## Usage memory
 
-`secretsway` remembers what you launch. Pressing `Enter` on an app bumps a counter and
-marks it as most recent, persisted to `$XDG_STATE_HOME/secretsway/usage.json`
-(written atomically; a corrupt file is ignored rather than fatal).
+SecretSway remembers what you launch. Pressing `Enter` on an app increments a
+counter and marks it as most recent, persisted to
+`$XDG_STATE_HOME/secretsway/usage.json` (written atomically; a corrupt file is
+ignored rather than treated as fatal).
 
-With an empty query the list is ordered by use — the most recent pick is pinned
-to slot 1 and labelled `was last`, the rest by descending launch count with ties
-broken alphabetically so the list never shuffles between runs.
+With an empty query, the list is ordered by use: the most recent pick is
+pinned to slot 1 and labelled `was last`, and the rest are ordered by
+descending launch count, with ties broken alphabetically so the list never
+shuffles between runs.
 
-Typing a query switches to pure fuzzy ranking, as you would expect — usage
-order stops overriding what the text matches.
+Typing a query switches to pure fuzzy ranking, as expected — usage order stops
+overriding what the text matches.
 
-With `right_column = "dots"` the right-hand column shows frequency instead,
-6 down to 1 by rank, and the most recent pick is labelled `was last`.
+With `right_column = "dots"`, the right-hand column shows frequency instead,
+ranked 6 down to 1, with the most recent pick still labelled `was last`.
 
 Anything typed that matches no application is offered as a shell command.
 
 ## Configuration
 
-`~/.config/secretsway/secretsway.toml`, entirely optional — every key has a default, and
-an unrecognised key is an error rather than a silent no-op so typos surface
-immediately.
+`~/.config/secretsway/secretsway.toml` is entirely optional — every key has a
+default, and an unrecognized key is an error rather than a silent no-op, so
+typos surface immediately.
 
 ```toml
 [colors]
@@ -183,7 +184,7 @@ right_column = "off"
 
 [behaviour]
 # "shell" runs an unmatched query through `sh -c`, so pipes and redirects work.
-# This means anything typed at $mod+d can be executed.  Use "argv" to tokenise
+# This means anything typed at $mod+d can be executed. Use "argv" to tokenize
 # without a shell, or "off" to disable the fallback entirely.
 command_fallback = "shell"
 ```
@@ -196,7 +197,7 @@ secretsway --dump-apps     # the parsed app list as JSON
 secretsway --dump-apps | jq -r '.[].name' | diff - <(fuzzel --list)
 ```
 
-`--dump-apps` and `--check` work with no GTK installed, so you can confirm the
+`--dump-apps` and `--check` work without GTK installed, so you can confirm the
 backend matches fuzzel before binding anything to `$mod+d`.
 
 ## Tests
@@ -205,31 +206,32 @@ backend matches fuzzel before binding anything to `$mod+d`.
 python3 -m unittest discover -s tests -t .
 ```
 
-The app discovery, `Exec` expansion, locale fallback, fuzzy matcher, config
-validation, launch argv construction and panel layout are all covered — none of
-them need a compositor. What is *not* covered is the GTK/layer-shell drawing
-path, which needs a real sway session to exercise.
+App discovery, `Exec` expansion, locale fallback, the fuzzy matcher, config
+validation, launch argv construction, and panel layout are all covered — none
+of it requires a compositor. The one thing *not* covered is the GTK/layer-shell
+drawing path, which needs a real Sway session to exercise.
 
 ## Notes
 
-- **Single instance.** A second `$mod+d` toggles the resident strip rather than
-  stacking a second one, via a `0600` unix socket in `$XDG_RUNTIME_DIR`. The
-  socket is created under a `0177` umask, so it is never briefly
+- **Single instance.** A second `$mod+d` toggles the resident strip rather
+  than stacking a new one, via a `0600` Unix socket in `$XDG_RUNTIME_DIR`. The
+  socket is created under a `0177` umask, so it's never briefly
   world-connectable between `bind()` and the `chmod`.
-- **`command_fallback = "shell"` is the default**, and that means anything typed
-  at `$mod+d` is executed by `sh -c` if it matches no application. That is the
-  point of a launcher that looks like a terminal, but it does make a
-  compositor-global keybind an arbitrary-execution surface. Set
-  `command_fallback = "argv"` to tokenise without a shell, or `"off"` to allow
-  only `.desktop` entries.
-- **No `swaymsg exec`.** Command expansion would happen twice more (swaymsg,
-  then sway, then `sh`) and swaymsg splits on commas, so a desktop entry with a
-  quoted argument containing `$` could be expanded into something that runs. We
-  already run inside sway and inherit its environment, so the app is spawned
-  directly with the argv the entry produced.
-- **The frame is drawn, not typeset.** Cairo rectangles rather than box-drawing
-  glyphs, so the outline is pixel-exact and does not depend on the font having
-  `U+2551` or on the output width being an exact multiple of the cell width.
-- **`gtk4-layer-shell` must be preloaded** before `libwayland-client`, or the
-  layer-shell negotiation fails silently and the strip comes up as an ordinary
-  window. The wrapper sets `LD_PRELOAD` and `secretsway` also does it via `ctypes`.
+- **`command_fallback = "shell"` is the default**, which means anything typed
+  at `$mod+d` gets executed by `sh -c` if it matches no application. That's
+  the point of a launcher that looks like a terminal, but it does turn a
+  compositor-global keybind into an arbitrary-execution surface. Set
+  `command_fallback = "argv"` to tokenize without a shell, or `"off"` to
+  allow only `.desktop` entries.
+- **No `swaymsg exec`.** Going through `swaymsg` would expand the command
+  twice more (swaymsg, then Sway, then `sh`), and `swaymsg` splits on commas —
+  so a desktop entry with a quoted argument containing `$` could expand into
+  something unintended. Since we already run inside Sway and inherit its
+  environment, the app is spawned directly with the argv the entry produced.
+- **The frame is drawn, not typeset.** Cairo rectangles rather than
+  box-drawing glyphs, so the outline is pixel-exact regardless of whether the
+  font has `U+2551` or the output width is an exact multiple of the cell width.
+- **`gtk4-layer-shell` must be preloaded** before `libwayland-client`, or
+  layer-shell negotiation fails silently and the strip comes up as an
+  ordinary window. The wrapper script sets `LD_PRELOAD`, and `secretsway`
+  also does it itself via `ctypes`.
